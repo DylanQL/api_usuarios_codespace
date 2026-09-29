@@ -21,7 +21,25 @@ app.get('/usuarios', (req, res) => {
             res.status(500).json({ error: err.message });
             return;
         }
-        res.json(rows);
+        const ahora = Date.now();
+        const usuarios = rows.map((row) => {
+            const inicio = row.fecha_inicio
+                ? new Date(row.fecha_inicio.replace(' ', 'T')).getTime()
+                : NaN;
+            const segundos = Math.floor((ahora - inicio) / 1000);
+
+            let tiempo_transcurrido = null;
+            if (Number.isFinite(inicio)) {
+                const horas = Math.floor(segundos / 3600);
+                const minutos = Math.floor((segundos % 3600) / 60);
+                const segundosRestantes = segundos % 60;
+                tiempo_transcurrido = `${horas}h ${minutos}m ${segundosRestantes}s`;
+            }
+
+            return { ...row, tiempo_transcurrido };
+        });
+
+        res.json(usuarios);
     });
 });
 
